@@ -1,0 +1,7 @@
+build-tools/
+backup-*/
+dist/
+*.o
+__pycache__/
+
+gsx-jetway-bell/

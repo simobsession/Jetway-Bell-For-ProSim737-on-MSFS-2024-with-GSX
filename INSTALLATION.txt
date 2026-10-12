@@ -1,0 +1,39 @@
+GSX JETWAY BELL — PORTABLE INSTALLER 1.1.10
+For a second Windows MSFS 2024 installation using ProSim 737.
+
+REQUIREMENTS
+MSFS 2024, GSX with the Couatl Remote v2 state feed enabled, and the ProSim aircraft package named prosim-b738 with SimObjects/Airplanes/prosim-b738-2026.
+This release works with GSX-operated jetways across airports when flying that ProSim aircraft. It does not automatically add the bell to other aircraft. A different ProSim folder/version may require an adapted installer.
+No separate companion application remains running. WAVs, gauge and WASM live in the independent gsx-jetway-bell package. Two small aircraft configuration integrations remain necessary.
+
+INSTALL
+1. Close MSFS. Extract the ZIP to a normal writable folder; keep it for backups/reinstallation.
+2. Right-click Setup.ps1 and choose Run with PowerShell. If Windows policy blocks that, open PowerShell in the extracted folder and run:
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Setup.ps1
+3. Setup detects common MSFS 2024 package locations from UserCfg.opt. If it cannot find a single matching ProSim installation, enter your actual Community folder. For a custom location you can also run:
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Setup.ps1 -CommunityRoot "D:\MSFS2024\Community"
+4. Verify GSX's Remote state feed is enabled. In your existing %APPDATA%\Virtuali\CouatlAddons.ini, the [GSX] section uses remote_server_enabled = 1. Preserve other settings. Restart Couatl/GSX if you change this. The installer does not edit GSX settings.
+5. Start MSFS and select the ProSim 737. Operate the jetway through GSX, testing both connection and disconnection.
+
+EXPECTED RESULT
+Bell loops throughout GSX jetway operation; silent when finished.
+Left-side playback; actual tracked cab-to-aircraft-door distance controls volume.
+Near/far multipliers 1.0 / 0.125 at 3 / 10 metres, initial/fallback volume 12.5.
+Inside: front-left door closed gives approved quiet, muffled audio; open gives clearer audio about 3 dB louder; partial positions blend. ProSim and MSFS interactive point door signals are both monitored in 1.1.10. Outside retains the approved distance-faded cabin recording.
+This is fixed left panning and distance attenuation, not a moving surround emitter.
+
+WHAT IS CHANGED
+Adds Community/gsx-jetway-bell with packaged WAVs, HTML gauge and WASM.
+Adds the hidden gauge to ProSim panel.cfg; adds bell sound slots custom_sound_10, 11 and 12 to sound.xml; updates aircraft layout.json. Refuses these slots if occupied by unrelated sounds.
+Preserves existing door sounds and other aircraft sound definitions. No ProSim program or Audio 2 modification; MSFS plays the audio.
+On upgrading our older installs, removes only our old bell WAV copies from ProSim after packaged-copy verification. If our earlier KDAL-specific bell modifications exist, removes those targeted entries; ordinary unmodified KDAL scenery is left alone.
+Backups are saved alongside Install.ps1 in backup-YYYYMMDD-HHMMSS. Source package does not contain ProSim's original configuration or its licensed aircraft assets.
+
+UPDATES / RECOVERY
+After a ProSim update replaces panel.cfg or sound.xml, close MSFS and rerun Setup.ps1. GSX files are not patched, but a future Remote API change could require a bell update.
+To undo a fresh install: close MSFS, restore the backed-up panel.cfg, sound.xml and layout.json to their matching aircraft paths, then remove the gsx-jetway-bell package. Restore KDAL files only if your backup contains changed KDAL files. Do not overwrite newer aircraft updates or later sound changes with older backups. On upgrades, the backup restores the previous bell integration; remove its old gauge/sound entries too if complete removal is desired.
+
+VALIDATION / LIMITS
+Installer tested in an isolated fresh ProSim configuration fixture and rerun to check idempotence. Packaged-file SHA-256 checksums provided.
+Packaged-WAV playback was confirmed working on the original user's original MSFS installation. 1.1.10 door sensing passes simulated regression tests; final open-versus-closed audible difference is still awaiting user confirmation. Second-machine playback requires testing after installation.
+Preserve this ZIP and your installer backups. No SDK, Python or Node installation is needed to install or run the bell.
