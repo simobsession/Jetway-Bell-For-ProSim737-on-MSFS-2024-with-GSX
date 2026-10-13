@@ -1,5 +1,0 @@
-<Bridge>
-  <ProSimDirectory />
-  <ProSimHost>127.0.0.1</ProSimHost>
-  <SimulatorProcess>FlightSimulator2024</SimulatorProcess>
-</Bridge>
