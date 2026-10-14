@@ -11,7 +11,7 @@ class SetupForm : Form {
  TextBox folder=new TextBox(),log=new TextBox(); Button install=new Button(),uninstall=new Button(),browse=new Button(),settings=new Button();
  string home=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"GSXJetwayBellProSim");
  public SetupForm(bool removing,bool soundSettings){
-  Text="Jetway Bell for ProSim737 — Setup";Width=760;Height=490;StartPosition=FormStartPosition.CenterScreen;
+  Text="Jetway Bell for ProSim737 — Setup";Width=760;Height=490;StartPosition=FormStartPosition.CenterScreen;Icon=System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
   var title=new Label{Text="Jetway Bell For ProSim737 on MSFS 2024 with GSX",Left=18,Top=18,Width=700,Height=25};
   var help=new Label{Text="Close MSFS first. Choose the Community folder containing prosim-b738.",Left=18,Top=50,Width=700};
   folder.SetBounds(18,82,610,25);browse.Text="Browse...";browse.SetBounds(636,80,95,28);

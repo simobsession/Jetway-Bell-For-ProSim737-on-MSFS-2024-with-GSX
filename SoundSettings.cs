@@ -10,7 +10,7 @@ class SoundSettingsForm:Form {
  string Data {get{return Path.Combine(home,"UserData");}}
  string SettingsPath {get{return Path.Combine(Data,"settings.xml");}}
  public SoundSettingsForm(string root){home=root;Directory.CreateDirectory(Path.Combine(Data,"Sounds"));doc=File.Exists(SettingsPath)?XDocument.Load(SettingsPath):new XDocument(new XElement("SoundSettings"));
-  Text="Jetway Bell — Sound Settings";Width=690;Height=470;StartPosition=FormStartPosition.CenterParent;
+  Text="Jetway Bell — Sound Settings";Width=690;Height=470;StartPosition=FormStartPosition.CenterParent;Icon=System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
   defaultFile=(string)doc.Root.Element("Default")==null?"":(string)doc.Root.Element("Default").Attribute("file")??"";
   defaultLabel.SetBounds(18,20,630,32);var choose=new Button{Text="Choose default WAV",Left=18,Top=55,Width=160};var reset=new Button{Text="Use bundled default",Left=190,Top=55,Width=160};
   airports.SetBounds(18,110,630,180);icao.SetBounds(18,305,90,25);icao.MaxLength=4;icao.CharacterCasing=CharacterCasing.Upper;

@@ -1,5 +1,5 @@
 Jetway Bell For ProSim737 on MSFS 2024 with GSX
-Version 1.2.4 — Sound Settings preview
+Version 1.2.5 — Sound Settings preview
 
 Download Setup.exe from this release. Everything needed by the bell installer is embedded in that single executable. MSFS 2024, GSX Pro and the supported ProSim737 aircraft must already be installed.
 
@@ -26,10 +26,12 @@ DEVELOPMENT
 C++/WASM module, JavaScript gauge and compiled C# Windows Forms setup/installation backend. No PowerShell or other shell is launched at runtime. The EXE payload contains only the MSFS package and documentation; it contains no installation scripts or external audio helper DLL. Build-Setup.ps1 builds Setup.exe using the Windows .NET Framework compiler and includes the complete payload. Build-Release.ps1 builds the manual installer ZIP. Build-Distance.ps1 requires the separately obtained official MSFS 2024 SDK. Run Node tests test-bell-state.cjs, test-distance-module.cjs, test-door-mix.cjs and test-transport.cjs; run test-sound-settings.ps1 for isolated settings lifecycle tests.
 No SDK, ProSim aircraft assets, GSX source files, user settings or private backups are distributed. No open-source or audio license has been assigned; installation packages are provided for personal simulator use. Contact the repository owner regarding other uses. This project is not affiliated with Microsoft, FSDreamTeam or ProSim.
 
-1.2.4: tolerate legacy Windows-1252 characters in aircraft XML incorrectly marked as UTF-8. Preserve original bytes in installer backups and save edited XML as valid UTF-8. Structurally invalid XML remains an error.
+1.2.5: tolerate legacy Windows-1252 characters in aircraft XML incorrectly marked as UTF-8. Preserve original bytes in installer backups and save edited XML as valid UTF-8. Structurally invalid XML remains an error.
 
-1.2.4: replace all runtime installation, custom sound generation, XML handling, shortcut/registry operations and removal scripts with compiled C# inside Setup.exe. PowerShell build/test scripts in the source repository are development tools only and are not shipped in Setup.exe. Native lifecycle/rollback tests pass. The EXE is still unsigned; eliminating script execution does not guarantee antivirus acceptance.
+1.2.5: replace all runtime installation, custom sound generation, XML handling, shortcut/registry operations and removal scripts with compiled C# inside Setup.exe. PowerShell build/test scripts in the source repository are development tools only and are not shipped in Setup.exe. Native lifecycle/rollback tests pass. The EXE is still unsigned; eliminating script execution does not guarantee antivirus acceptance.
 
-1.2.4: store the settings/uninstaller executable under a versioned, content-verified filename. Upgrades no longer overwrite a fixed Setup.exe that may be open or read-only. Shortcuts and the Windows uninstall entry point to the new copy.
+1.2.5: store the settings/uninstaller executable under a versioned, content-verified filename. Upgrades no longer overwrite a fixed Setup.exe that may be open or read-only. Shortcuts and the Windows uninstall entry point to the new copy.
 
-1.2.4: resolve Desktop and Start menu through Windows Known Folder APIs (including redirected locations). Create shortcuts independently; a blocked Desktop no longer rolls back installation or prevents Start menu/uninstaller registration. A settings shortcut is also saved in the application folder, and Windows Installed apps supports Modify/Settings where available.
+1.2.5: resolve Desktop and Start menu through Windows Known Folder APIs (including redirected locations). Create shortcuts independently; a blocked Desktop no longer rolls back installation or prevents Start menu/uninstaller registration. A settings shortcut is also saved in the application folder, and Windows Installed apps supports Modify/Settings where available.
+
+1.2.5: fix silent airport recordings by allocating unused, SDK-supported WAV event slots (01�12 in supported custom event families) instead of inventing event names. Existing aircraft sound events are preserved. Add a custom bell icon and rename shortcuts/application to Jetway Bell for ProSim GSX. Reinstall with MSFS closed, retain the EDDF assignment, then restart MSFS completely.

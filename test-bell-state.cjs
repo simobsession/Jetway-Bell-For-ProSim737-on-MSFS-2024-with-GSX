@@ -51,7 +51,7 @@ values.set('L:GSX_BELL_JETWAY_MOVING',1);gauge.Update();callbacks.onClose();cloc
 callbacks.onMessage({type:'hello',gsxRunning:true});callbacks.onMessage({type:'snapshot',services:[{id:'OperateJetways',stateRaw:5}]});gauge.disconnectedCallback();clock+=70;gauge.Update();assert.equal(active(),0,'unload cancels pending start');
 console.log('PASS: pre-start curve preparation, no startup zero dip, manual/automatic timing, idle silence and cancellation.');
 values.set('L:GSX_JETWAY_BELL_ACTIVE',0);
-sandbox.GSXBellAirports=['KDAL','EGLL'];const selectedGauge=new Instrument();selectedGauge.connectedCallback();
+sandbox.GSXBellAirports=['KDAL','EGLL','EDDF'];const selectedGauge=new Instrument();selectedGauge.connectedCallback();
 selectedGauge.lastBellValue=1;selectedGauge.publishAirport('KDAL');
 assert.equal(values.get('L:GSX_JETWAY_BELL_AIRPORT_KDAL_ACTIVE'),1);
 assert.equal(values.get('L:GSX_JETWAY_BELL_DEFAULT_ACTIVE'),0);
@@ -59,3 +59,5 @@ selectedGauge.publishAirport('KJFK');assert.equal(values.get('L:GSX_JETWAY_BELL_
 selectedGauge.publishAirport('EGLL');assert.equal(values.get('L:GSX_JETWAY_BELL_AIRPORT_EGLL_ACTIVE'),1);
 selectedGauge.publishBell(false);assert.equal(values.get('L:GSX_JETWAY_BELL_AIRPORT_EGLL_ACTIVE'),0);
 console.log('PASS: KDAL/EGLL overrides, generic fallback and exclusive sound selection.');
+
+selectedGauge.lastBellValue=1;selectedGauge.publishAirport('EDDF');assert.equal(values.get('L:GSX_JETWAY_BELL_AIRPORT_EDDF_ACTIVE'),1);assert.equal(values.get('L:GSX_JETWAY_BELL_DEFAULT_ACTIVE'),0);assert.equal(values.get('L:GSX_JETWAY_BELL_AIRPORT_EGLL_ACTIVE'),0);console.log('PASS: EDDF selects the saved custom sound exclusively.');
