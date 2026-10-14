@@ -4,5 +4,5 @@
 [assembly: System.Reflection.AssemblyProduct("Jetway Bell for ProSim GSX")]
 [assembly: System.Reflection.AssemblyDescription("MSFS 2024 GSX jetway bell installation and sound settings")]
 [assembly: System.Reflection.AssemblyCompany("GSX Jetway Bell")]
-[assembly: System.Reflection.AssemblyVersion("1.2.7.0")]
-[assembly: System.Reflection.AssemblyFileVersion("1.2.7.0")]
+[assembly: System.Reflection.AssemblyVersion("1.2.8.0")]
+[assembly: System.Reflection.AssemblyFileVersion("1.2.8.0")]

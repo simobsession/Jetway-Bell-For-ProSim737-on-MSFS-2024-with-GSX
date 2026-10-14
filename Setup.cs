@@ -8,26 +8,21 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
 class SetupForm : Form {
- TextBox folder=new TextBox(),log=new TextBox(); Button install=new Button(),uninstall=new Button(),browse=new Button(),settings=new Button();
+ TextBox folder=new TextBox(),log=new TextBox(); Button install=new Button(),uninstall=new Button(),browse=new Button(),close=new Button();
  string home=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"GSXJetwayBellProSim");
- public SetupForm(bool removing,bool soundSettings){
+ public SetupForm(bool removing){
   Text="Jetway Bell for ProSim GSX v"+AppVersion.Text+" — Setup";Width=760;Height=490;StartPosition=FormStartPosition.CenterScreen;Icon=System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
   var title=new Label{Text="Jetway Bell For ProSim737 on MSFS 2024 with GSX",Left=18,Top=18,Width=700,Height=25};
   var help=new Label{Text="Close MSFS first. Choose the Community folder containing prosim-b738.",Left=18,Top=50,Width=700};
   folder.SetBounds(18,82,610,25);browse.Text="Browse...";browse.SetBounds(636,80,95,28);
   install.Text="Install / Update";install.SetBounds(18,120,150,32);uninstall.Text="Uninstall";uninstall.SetBounds(180,120,120,32);
   log.Multiline=true;log.ReadOnly=true;log.ScrollBars=ScrollBars.Vertical;log.SetBounds(18,168,713,270);
-  settings.Text="Sound Settings";settings.SetBounds(320,120,150,32);
-  Controls.AddRange(new Control[]{title,help,folder,browse,install,uninstall,settings,log});
+  close.Text="Close";close.SetBounds(611,120,120,32);close.Click+=(s,e)=>Close();
+  Controls.AddRange(new Control[]{title,help,folder,browse,install,uninstall,close,log});
   folder.Text=FindCommunity();browse.Click+=(s,e)=>{using(var d=new FolderBrowserDialog()){d.Description="Select MSFS 2024 Community folder";d.SelectedPath=folder.Text;if(d.ShowDialog()==DialogResult.OK)folder.Text=d.SelectedPath;}};
   install.Click+=async(s,e)=>await Run(false);uninstall.Click+=async(s,e)=>await Run(true);
-  settings.Click+=async(s,e)=>await EditSounds();
   
   if(removing)Shown+=async(s,e)=>await Run(true);
- }
- async Task EditSounds(){
-  string config=Path.Combine(home,@"UserData\settings.xml");string old=File.Exists(config)?File.ReadAllText(config):null;
-  try{using(var dialog=new SoundSettingsForm(home)){dialog.UninstallApplication=()=>Run(true,true);if(dialog.ShowDialog(this)==DialogResult.OK){}if(dialog.Saved){bool applied=await Run(false);if(!applied){if(old==null)File.Delete(config);else File.WriteAllText(config,old);}}}}catch(Exception e){MessageBox.Show(e.Message,"Sound Settings");}
  }
  string FindCommunity(){
   using(var k=Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\GSXJetwayBellProSim")){if(k!=null){var saved=k.GetValue("CommunityRoot") as string;if(!String.IsNullOrEmpty(saved))return saved;}}
@@ -41,7 +36,7 @@ class SetupForm : Form {
   string selected=folder.Text.Trim().Trim('"');if(!Directory.Exists(selected)){MessageBox.Show("Choose an existing Community folder.");return false;}
   bool deleteAll=false;
   if(remove){using(var choice=new UninstallOptionsForm()){if(choice.ShowDialog()!=DialogResult.OK)return false;deleteAll=choice.DeleteAll;}}
-  settings.Enabled=install.Enabled=uninstall.Enabled=browse.Enabled=folder.Enabled=false;log.Text="Working...\r\n";
+  close.Enabled=install.Enabled=uninstall.Enabled=browse.Enabled=folder.Enabled=false;log.Text="Working...\r\n";
   try{
    string output=await Task.Run(()=>{
     Directory.CreateDirectory(home);
@@ -56,14 +51,16 @@ class SetupForm : Form {
     File.WriteAllText(Path.Combine(home,"setup-last.log"),result);return result;
    });log.Text=output;
    if(remove){if(deleteAll)ApplicationCleanup.Start(home);MessageBox.Show(deleteAll?"Uninstalled. Application files, custom sounds, settings and backups will be removed when this window closes. Downloaded installers are not removed.":"Uninstalled. Existing application files, custom sounds, settings and backups were preserved for reinstallation.","Jetway Bell");System.Threading.SynchronizationContext.Current.Post(_=>Application.Exit(),null);return true;}
-   MessageBox.Show(settingsOnly?"Sound settings applied. Start MSFS to hear your changes.":remove?"Uninstall completed. Backups and setup files are retained for recovery.":"Installation completed. Start MSFS to test the bell.","Jetway Bell");return true;
+   string completed=settingsOnly?"Sound settings applied. Start MSFS to hear your changes.":"Installation completed successfully.\r\n\r\nPlease close this installer. Open Jetway Bell for ProSim GSX from the desktop or Start menu to change sound settings. Start MSFS to use the bell.";
+   if(!settingsOnly)log.AppendText("\r\n\r\n"+completed);
+   MessageBox.Show(completed,settingsOnly?"Jetway Bell":"Installation successful",MessageBoxButtons.OK,MessageBoxIcon.Information);return true;
   }catch(Exception e){log.Text=e.Message;MessageBox.Show(settingsOnly?"Unable to apply sound settings: "+e.Message:"Setup could not complete. Details are shown in the window.","Jetway Bell");return false;}
-  finally{settings.Enabled=install.Enabled=uninstall.Enabled=browse.Enabled=folder.Enabled=true;}
+  finally{close.Enabled=install.Enabled=uninstall.Enabled=browse.Enabled=folder.Enabled=true;}
  }
  internal static Form CreateStartupForm(string[] args){
   bool removing=Array.Exists(args,a=>a.Equals("/uninstall",StringComparison.OrdinalIgnoreCase));
   if(!removing && Array.Exists(args,a=>a.Equals("/settings",StringComparison.OrdinalIgnoreCase))){
-   var backend=new SetupForm(false,false);
+   var backend=new SetupForm(false);
    var dialog=new SoundSettingsForm(backend.home);
    dialog.StartPosition=FormStartPosition.CenterScreen;
    dialog.ApplySettings=()=>backend.Run(false,true);
@@ -71,7 +68,7 @@ class SetupForm : Form {
    dialog.FormClosed+=(s,e)=>backend.Dispose();
    return dialog;
   }
-  return new SetupForm(removing,false);
+  return new SetupForm(removing);
  }
  [STAThread]static void Main(string[] args){Application.EnableVisualStyles();if(ApplicationCleanup.TryRun(args))return;Application.Run(CreateStartupForm(args));}
 }

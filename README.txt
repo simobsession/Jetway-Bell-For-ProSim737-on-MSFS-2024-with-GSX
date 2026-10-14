@@ -1,6 +1,6 @@
 ﻿Jetway Bell For ProSim737 on MSFS 2024 with GSX
 
-Version 1.2.7 - Sound Settings preview
+Version 1.2.8 - Sound Settings preview
 
 
 
@@ -14,7 +14,7 @@ Close MSFS completely. Run Setup.exe, confirm the Community folder containing pr
 
 SOUND SETTINGS
 
-Use the Jetway Bell for ProSim GSX desktop or Start menu shortcut, or click Sound Settings in Setup.exe. Choose a custom default WAV, assign airport overrides using four-character ICAO codes, remove overrides, preview recordings, or restore the bundled default. Save and apply with MSFS closed. Preview plays the original recording; simulator playback uses prepared cabin/open-door versions and distance attenuation.
+Use the Jetway Bell for ProSim GSX desktop or Start menu shortcut. Choose a custom default WAV, assign airport overrides using four-character ICAO codes, remove overrides, preview recordings, or restore the bundled default. Save and apply with MSFS closed. Preview plays the original recording; simulator playback uses prepared cabin/open-door versions and distance attenuation.
 
 
 
@@ -76,3 +76,5 @@ No SDK, ProSim aircraft assets, GSX source files, user settings or private backu
 1.2.6: Desktop and Start menu shortcuts open Sound Settings directly as the only visible application window. Saving uses the compiled backend in the same process without copying the executable or rewriting shortcuts/uninstaller registration. Apply failures keep the settings screen open and restore previous preferences. Add Windows product and file version metadata. The executable remains unsigned; Norton acceptance has not been verified.
 
 1.2.7: Show version numbers in Setup and Sound Settings title bars. Add Uninstall to Sound Settings with explicit preserve/remove-all options. Full removal runs only after successful aircraft/package uninstall, is restricted to the exact application data folder, and does not traverse linked directories. Preserve remains the default.
+
+1.2.8: Remove Sound Settings from Setup. Successful installation explicitly confirms success and asks you to close the installer, with the same message retained in its log. Add a Close button. Open sound settings through the installed desktop or Start menu app shortcut.
