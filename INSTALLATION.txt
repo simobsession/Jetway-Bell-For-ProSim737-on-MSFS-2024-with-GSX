@@ -1,39 +1,27 @@
-GSX JETWAY BELL — PORTABLE INSTALLER 1.1.10
-For a second Windows MSFS 2024 installation using ProSim 737.
+Jetway Bell For ProSim737 on MSFS 2024 with GSX
+Version 1.2.0 — Sound Settings preview
 
-REQUIREMENTS
-MSFS 2024, GSX with the Couatl Remote v2 state feed enabled, and the ProSim aircraft package named prosim-b738 with SimObjects/Airplanes/prosim-b738-2026.
-This release works with GSX-operated jetways across airports when flying that ProSim aircraft. It does not automatically add the bell to other aircraft. A different ProSim folder/version may require an adapted installer.
-No separate companion application remains running. WAVs, gauge and WASM live in the independent gsx-jetway-bell package. Two small aircraft configuration integrations remain necessary.
+Download Setup.exe from this release. Everything needed by the bell installer is embedded in that single executable. MSFS 2024, GSX Pro and the supported ProSim737 aircraft must already be installed.
 
-INSTALL
-1. Close MSFS. Extract the ZIP to a normal writable folder; keep it for backups/reinstallation.
-2. Right-click Setup.ps1 and choose Run with PowerShell. If Windows policy blocks that, open PowerShell in the extracted folder and run:
-   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Setup.ps1
-3. Setup detects common MSFS 2024 package locations from UserCfg.opt. If it cannot find a single matching ProSim installation, enter your actual Community folder. For a custom location you can also run:
-   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Setup.ps1 -CommunityRoot "D:\MSFS2024\Community"
-4. Verify GSX's Remote state feed is enabled. In your existing %APPDATA%\Virtuali\CouatlAddons.ini, the [GSX] section uses remote_server_enabled = 1. Preserve other settings. Restart Couatl/GSX if you change this. The installer does not edit GSX settings.
-5. Start MSFS and select the ProSim 737. Operate the jetway through GSX, testing both connection and disconnection.
+Close MSFS completely. Run Setup.exe, confirm the Community folder containing prosim-b738, and choose Install / Update. The supported aircraft path is SimObjects/Airplanes/prosim-b738-2026. The installer runs per user; the Community folder must be writable.
 
-EXPECTED RESULT
-Bell loops throughout GSX jetway operation; silent when finished.
-Left-side playback; actual tracked cab-to-aircraft-door distance controls volume.
-Near/far multipliers 1.0 / 0.125 at 3 / 10 metres, initial/fallback volume 12.5.
-Inside: front-left door closed gives approved quiet, muffled audio; open gives clearer audio about 3 dB louder; partial positions blend. ProSim and MSFS interactive point door signals are both monitored in 1.1.10. Outside retains the approved distance-faded cabin recording.
-This is fixed left panning and distance attenuation, not a moving surround emitter.
+SOUND SETTINGS
+Use the Jetway Bell Sound Settings desktop or Start menu shortcut, or click Sound Settings in Setup.exe. Choose a custom default WAV, assign airport overrides using four-character ICAO codes, remove overrides, preview recordings, or restore the bundled default. Save and apply with MSFS closed. Preview plays the original recording; simulator playback uses prepared cabin/open-door versions and distance attenuation.
 
-WHAT IS CHANGED
-Adds Community/gsx-jetway-bell with packaged WAVs, HTML gauge and WASM.
-Adds the hidden gauge to ProSim panel.cfg; adds bell sound slots custom_sound_10, 11 and 12 to sound.xml; updates aircraft layout.json. Refuses these slots if occupied by unrelated sounds.
-Preserves existing door sounds and other aircraft sound definitions. No ProSim program or Audio 2 modification; MSFS plays the audio.
-On upgrading our older installs, removes only our old bell WAV copies from ProSim after packaged-copy verification. If our earlier KDAL-specific bell modifications exist, removes those targeted entries; ordinary unmodified KDAL scenery is left alone.
-Backups are saved alongside Install.ps1 in backup-YYYYMMDD-HHMMSS. Source package does not contain ProSim's original configuration or its licensed aircraft assets.
+Supported input: uncompressed 16-bit PCM WAV, mono or stereo, 8–192 kHz, 0.1–60 seconds (maximum 24 MB audio data). Recordings are copied to persistent storage, so their original source files can be moved afterward. Setup prepares normalized, filtered variants without requiring external audio software.
 
-UPDATES / RECOVERY
-After a ProSim update replaces panel.cfg or sound.xml, close MSFS and rerun Setup.ps1. GSX files are not patched, but a future Remote API change could require a bell update.
-To undo a fresh install: close MSFS, restore the backed-up panel.cfg, sound.xml and layout.json to their matching aircraft paths, then remove the gsx-jetway-bell package. Restore KDAL files only if your backup contains changed KDAL files. Do not overwrite newer aircraft updates or later sound changes with older backups. On upgrades, the backup restores the previous bell integration; remove its old gauge/sound entries too if complete removal is desired.
+GSX provides the current airport. A configured airport uses its recording; every other or unknown airport uses the default. Sounds retain left-side playback, jetway-distance fading and the ProSim/MSFS L1 door mix. They play through MSFS rather than ProSim Audio 2. No companion application runs during simulator use.
 
-VALIDATION / LIMITS
-Installer tested in an isolated fresh ProSim configuration fixture and rerun to check idempotence. Packaged-file SHA-256 checksums provided.
-Packaged-WAV playback was confirmed working on the original user's original MSFS installation. 1.1.10 door sensing passes simulated regression tests; final open-versus-closed audible difference is still awaiting user confirmation. Second-machine playback requires testing after installation.
-Preserve this ZIP and your installer backups. No SDK, Python or Node installation is needed to install or run the bell.
+UPGRADES AND UNINSTALL
+Settings and original custom WAVs live in %LOCALAPPDATA%\GSXJetwayBellProSim\UserData. Upgrades preserve that directory and regenerate installed audio from it. Do not remove it if you want to keep your preferences.
+Use Windows Installed apps or Setup.exe > Uninstall to remove the bell integration, bell package and shortcuts. Settings, custom originals, logs and recovery backups remain for reinstallation. Uninstall preserves unrelated aircraft sounds and later unrelated configuration changes. Modified or unrecognized package files stop automatic removal rather than being deleted.
+
+GSX Remote v2 must be enabled using remote_server_enabled = 1 in the existing [GSX] section of %APPDATA%\Virtuali\CouatlAddons.ini. The installer does not modify GSX settings or GSX files. After a ProSim aircraft update replaces panel.cfg or sound.xml, rerun Install / Update.
+
+VALIDATION
+Isolated install/upgrade/uninstall tests cover custom default audio, airport variants, preserved preferences and WAVs, and unrelated door sounds. Gauge tests cover airport exclusivity and default fallback; existing operation, startup sequencing, distance, door mix and transport tests pass. New custom airport sound definitions require in-simulator listening validation; this release is a preview. A brief first-connection surge was reported in 1.1.13 and remains under investigation.
+The executable is unsigned. Previous GitHub releases are retained for rollback.
+
+DEVELOPMENT
+C++/WASM module, JavaScript gauge, PowerShell installation backend and C# Windows Forms setup. Build-Setup.ps1 builds Setup.exe using the Windows .NET Framework compiler and includes the complete payload. Build-Release.ps1 builds the manual installer ZIP. Build-Distance.ps1 requires the separately obtained official MSFS 2024 SDK. Run Node tests test-bell-state.cjs, test-distance-module.cjs, test-door-mix.cjs and test-transport.cjs; run test-sound-settings.ps1 for isolated settings lifecycle tests.
+No SDK, ProSim aircraft assets, GSX source files, user settings or private backups are distributed. No open-source or audio license has been assigned; installation packages are provided for personal simulator use. Contact the repository owner regarding other uses. This project is not affiliated with Microsoft, FSDreamTeam or ProSim.

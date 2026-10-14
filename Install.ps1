@@ -33,7 +33,7 @@ if ($outsideNode -and $outsideNode.GetAttribute('FileName') -notin @('GSX_Jetway
 if ($null -eq $bellNode -and $soundDoc.SelectSingleNode('//Sound[@WwiseEvent="custom_sound_12"]')) { throw 'Sound slot custom_sound_12 is already used by another sound.' }
 $openExisting=$soundDoc.SelectSingleNode('//Sound[@WwiseEvent="custom_sound_10"]')
 if ($openExisting -and $openExisting.GetAttribute('FileName') -ne 'GSX_Jetway_Bell_Open') { throw 'Sound slot custom_sound_10 is already used by another sound.' }
-$backupRoot = Join-Path $sourceRoot ('backup-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+$backupRoot = Join-Path $sourceRoot ('backup-' + (Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
 New-Item -ItemType Directory -Path $backupRoot | Out-Null
 foreach ($relative in @($panelRelative,$soundRelative,$wavRelative,$cabinRelative,'layout.json')) {
  $path=Join-Path $aircraftRoot $relative
@@ -85,6 +85,7 @@ foreach($node in @($bellNode,$outsideNode)) {
  foreach($v in @(0,100)) { $point=$soundDoc.CreateElement('Point');$point.SetAttribute('SimValue',[string]$v);$point.SetAttribute('Output',[string]$v);$curve.AppendChild($point) | Out-Null }
  $node.AppendChild($curve) | Out-Null
 }
+$outsideNode.SelectSingleNode('VolumeCurve').SetAttribute('LocalVar','GSX_BELL_PLAYBACK_VOLUME')
 # Inside: crossfade the approved closed sound with a clearer open-door sound.
 $bellNode.SelectSingleNode('VolumeCurve').SetAttribute('LocalVar','GSX_BELL_CLOSED_VOLUME')
 if (-not $openExisting) {

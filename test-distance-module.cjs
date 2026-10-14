@@ -20,7 +20,7 @@ assert.equal(get('GSX_BELL_DISTANCE_MODULE_LOADED'),1);
 set('GSX_BELL_AIRPORT_CODE_1',Buffer.from('KDAL').readUInt32LE());set('GSX_JETWAY_BELL_ACTIVE',1);
 function send(buffer){let p=instance.exports.malloc(buffer.length);new Uint8Array(instance.exports.memory.buffer,p,buffer.length).set(buffer);instance.exports.__indirect_function_table.get(dispatchIndex)(p,buffer.length,0);instance.exports.free(p);}
 const aircraft=Buffer.alloc(96);aircraft.writeUInt32LE(8,8);aircraft.writeUInt32LE(1,12);aircraft.writeUInt32LE(99,16);[32,-96,150,0,0,0,10].forEach((v,i)=>aircraft.writeDoubleLE(v,40+8*i));send(aircraft);
-function geometry(distance){const b=Buffer.alloc(188);b.writeUInt32LE(31,8);b.writeUInt32LE(1,16);b.writeUInt32LE(1,24);b.write('KDAL',28);b.writeInt32LE(50,36);[32,-96,150].forEach((v,i)=>b.writeDoubleLE(v,40+i*8));b.writeInt32LE(1,76);b.writeInt32LE(0,80);b.writeDoubleLE(10+distance,28+80+16);b.writeUInt32LE(123,28+152);b.writeUInt32LE(99,28+156);send(b);}
+function geometry(distance,status=1,attached=99){const b=Buffer.alloc(188);b.writeUInt32LE(31,8);b.writeUInt32LE(1,16);b.writeUInt32LE(1,24);b.write('KDAL',28);b.writeInt32LE(50,36);[32,-96,150].forEach((v,i)=>b.writeDoubleLE(v,40+i*8));b.writeInt32LE(status,76);b.writeInt32LE(0,80);b.writeDoubleLE(10+distance,28+80+16);b.writeUInt32LE(123,28+152);b.writeUInt32LE(attached,28+156);send(b);}
 instance.exports.Update_StandAlone(.1);
 // Check actual targets before smoothing: far-away gain is one quarter of the previous tuning,
 // while the close-up gain remains unchanged.
@@ -32,6 +32,10 @@ let previous=Infinity;
 for(const d of [2,10,30]){geometry(d);assert.ok(Math.abs(get('GSX_BELL_DISTANCE_METERS')-d)<.001);assert.equal(get('GSX_BELL_DISTANCE_VALID'),1);for(let i=0;i<10;i++)instance.exports.Update_StandAlone(.1);let v=get('GSX_BELL_VOLUME');assert.ok(v<previous,'farther jetway reduces volume');previous=v;}
 geometry(2);for(let i=0;i<10;i++)instance.exports.Update_StandAlone(.1);assert.ok(get('GSX_BELL_VOLUME')>previous,'approach raises volume');
 for(let i=0;i<40;i++)instance.exports.Update_StandAlone(.1);assert.equal(get('GSX_BELL_DISTANCE_VALID'),0);assert.ok(get('GSX_BELL_VOLUME')>11 && get('GSX_BELL_VOLUME')<14,'missing telemetry preserves the quieter fallback');
-set('GSX_JETWAY_BELL_ACTIVE',0);let oldRequests=requests;for(let i=0;i<10;i++)instance.exports.Update_StandAlone(.1);assert.equal(requests,oldRequests,'idle stops jetway requests');
+set('GSX_JETWAY_BELL_ACTIVE',0);let oldRequests=requests;for(let i=0;i<10;i++)instance.exports.Update_StandAlone(.1);assert.ok(requests>oldRequests,'idle polls for automatic operations');
+for(const status of [1,2,3,4,5,6]) {geometry(2,status);assert.equal(get('GSX_BELL_JETWAY_MOVING'),1,'approach, hood and retract phase '+status);}
+for(const status of [0,7]) {geometry(2,status);assert.equal(get('GSX_BELL_JETWAY_MOVING'),0,'rest/attached are silent');}
+geometry(2,1,101);assert.equal(get('GSX_BELL_JETWAY_MOVING'),0,'another aircraft jetway cannot trigger our bell');
+geometry(2,4);for(let i=0;i<25;i++)instance.exports.Update_StandAlone(.1);assert.equal(get('GSX_BELL_JETWAY_MOVING'),0,'stale motion clears');
 instance.exports.module_deinit();assert.equal(get('GSX_BELL_DISTANCE_MODULE_LOADED'),0);
 console.log('PASS: compiled WASM telemetry replay, approach/retraction volume, stale-data fallback, idle and unload.');

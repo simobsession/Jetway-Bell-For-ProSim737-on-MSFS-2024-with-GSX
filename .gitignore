@@ -5,3 +5,10 @@ dist/
 __pycache__/
 
 gsx-jetway-bell/
+
+installer-check/
+
+UserData/
+installed-files.json
+BellAudio.dll
+
