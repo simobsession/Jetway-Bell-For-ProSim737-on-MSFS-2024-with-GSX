@@ -1,5 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$CommunityRoot)
 $ErrorActionPreference='Stop'
+. (Join-Path $PSScriptRoot 'XmlIO.ps1')
 $package=Join-Path $CommunityRoot 'gsx-jetway-bell'
 $aircraft=Join-Path $CommunityRoot 'prosim-b738'
 $soundRel='SimObjects/Airplanes/prosim-b738-2026/sound/sound.xml'
@@ -7,7 +8,7 @@ $soundPath=Join-Path $aircraft $soundRel
 $audioRoot=Join-Path $package 'SimObjects/Airplanes/prosim-b738-2026/sound'
 $dataRoot=Join-Path $PSScriptRoot 'UserData'
 $settingsPath=Join-Path $dataRoot 'settings.xml'
-$doc=New-Object Xml.XmlDocument;$doc.PreserveWhitespace=$true;$doc.Load($soundPath)
+$doc=New-Object Xml.XmlDocument;$doc.PreserveWhitespace=$true;$doc=Read-BellXml $soundPath
 # Remove only generated definitions, retaining unrelated sounds.
 foreach($node in @($doc.SelectNodes('//Sound'))){if($node.GetAttribute('FileName') -match '^GSX_Jetway_Custom_[A-Z0-9]{4}_(Cabin|Open)$' -and $node.GetAttribute('LocalVar') -match '^GSX_JETWAY_BELL_AIRPORT_[A-Z0-9]{4}_ACTIVE$'){$node.ParentNode.RemoveChild($node) | Out-Null}}
 $settings=New-Object Xml.XmlDocument

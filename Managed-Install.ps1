@@ -1,5 +1,6 @@
 param([Parameter(Mandatory=$true)][string]$CommunityRoot,[switch]$Uninstall,[switch]$NoRegistration)
 $ErrorActionPreference='Stop'
+. (Join-Path $PSScriptRoot 'XmlIO.ps1')
 if(Get-Process -Name FlightSimulator,FlightSimulator2024 -ErrorAction SilentlyContinue){throw 'Close MSFS completely before installing or uninstalling.'}
 $CommunityRoot=(Resolve-Path -LiteralPath $CommunityRoot).Path
 $aircraft=Join-Path $CommunityRoot 'prosim-b738'
@@ -44,7 +45,7 @@ try {
   }
   $panelText=($kept -join '')
   $panelText=[regex]::Replace($panelText,'(?im)^; GSX bell: invisible manager, no external application\.\r?\n?','')
-  $doc=New-Object Xml.XmlDocument;$doc.PreserveWhitespace=$true;$doc.Load($sound)
+  $doc=New-Object Xml.XmlDocument;$doc.PreserveWhitespace=$true;$doc=Read-BellXml $sound
   foreach($node in @($doc.SelectNodes('//Sound'))){
    if(($node.GetAttribute('FileName') -match '^GSX_Jetway_(Bell(_Cabin|_Open)?|Custom_[A-Z0-9]{4}_(Cabin|Open))$') -and ($node.GetAttribute('LocalVar') -match '^GSX_JETWAY_BELL_(ACTIVE|DEFAULT_ACTIVE|AIRPORT_[A-Z0-9]{4}_ACTIVE)$')){$node.ParentNode.RemoveChild($node) | Out-Null}
   }
@@ -77,7 +78,7 @@ try {
     $link=$shell.CreateShortcut((Join-Path $directory 'Jetway Bell Sound Settings.lnk'));$link.TargetPath=Join-Path $PSScriptRoot 'Setup.exe';$link.Arguments='/settings';$link.WorkingDirectory=$PSScriptRoot;$link.Save()
    }
    New-Item -Path $registry -Force | Out-Null
-   $properties=@{DisplayName='Jetway Bell For ProSim737 on MSFS 2024 with GSX';DisplayVersion='1.2.0';Publisher='GSX Jetway Bell';InstallLocation=$PSScriptRoot;CommunityRoot=$CommunityRoot;UninstallString=('"'+(Join-Path $PSScriptRoot 'Setup.exe')+'" /uninstall');DisplayIcon=(Join-Path $PSScriptRoot 'Setup.exe')}
+   $properties=@{DisplayName='Jetway Bell For ProSim737 on MSFS 2024 with GSX';DisplayVersion='1.2.1';Publisher='GSX Jetway Bell';InstallLocation=$PSScriptRoot;CommunityRoot=$CommunityRoot;UninstallString=('"'+(Join-Path $PSScriptRoot 'Setup.exe')+'" /uninstall');DisplayIcon=(Join-Path $PSScriptRoot 'Setup.exe')}
    foreach($key in $properties.Keys){New-ItemProperty -Path $registry -Name $key -Value $properties[$key] -PropertyType String -Force | Out-Null}
    New-ItemProperty -Path $registry -Name NoModify -Value 1 -PropertyType DWord -Force | Out-Null
    New-ItemProperty -Path $registry -Name NoRepair -Value 1 -PropertyType DWord -Force | Out-Null

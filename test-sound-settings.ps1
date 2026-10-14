@@ -3,7 +3,7 @@ function Get-Process {param($Name,$ErrorAction) return $null}
 $root=Join-Path $PSScriptRoot ('installer-check\sounds-'+[guid]::NewGuid().ToString('N'))
 $testInstallRoot=Join-Path $root 'home';$community=Join-Path $root 'Community'
 New-Item -ItemType Directory -Path $testInstallRoot -Force | Out-Null
-foreach($file in @('Managed-Install.ps1','Apply-SoundSettings.ps1','Install.ps1','BellAudio.dll')){Copy-Item -LiteralPath (Join-Path $PSScriptRoot $file) -Destination $testInstallRoot}
+foreach($file in @('Managed-Install.ps1','Apply-SoundSettings.ps1','Install.ps1','BellAudio.dll','XmlIO.ps1')){Copy-Item -LiteralPath (Join-Path $PSScriptRoot $file) -Destination $testInstallRoot}
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'gsx-jetway-bell') -Destination $testInstallRoot -Recurse
 $aircraft=Join-Path $community 'prosim-b738';$panel=Join-Path $aircraft 'SimObjects\Airplanes\prosim-b738-2026\panel\panel.cfg';$sound=Join-Path $aircraft 'SimObjects\Airplanes\prosim-b738-2026\sound\sound.xml'
 New-Item -ItemType Directory -Path (Split-Path $panel),(Split-Path $sound) -Force | Out-Null

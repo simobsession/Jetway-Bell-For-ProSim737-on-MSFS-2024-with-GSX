@@ -1,5 +1,5 @@
 Jetway Bell For ProSim737 on MSFS 2024 with GSX
-Version 1.2.0 — Sound Settings preview
+Version 1.2.1 — Sound Settings preview
 
 Download Setup.exe from this release. Everything needed by the bell installer is embedded in that single executable. MSFS 2024, GSX Pro and the supported ProSim737 aircraft must already be installed.
 
@@ -25,3 +25,5 @@ The executable is unsigned. Previous GitHub releases are retained for rollback.
 DEVELOPMENT
 C++/WASM module, JavaScript gauge, PowerShell installation backend and C# Windows Forms setup. Build-Setup.ps1 builds Setup.exe using the Windows .NET Framework compiler and includes the complete payload. Build-Release.ps1 builds the manual installer ZIP. Build-Distance.ps1 requires the separately obtained official MSFS 2024 SDK. Run Node tests test-bell-state.cjs, test-distance-module.cjs, test-door-mix.cjs and test-transport.cjs; run test-sound-settings.ps1 for isolated settings lifecycle tests.
 No SDK, ProSim aircraft assets, GSX source files, user settings or private backups are distributed. No open-source or audio license has been assigned; installation packages are provided for personal simulator use. Contact the repository owner regarding other uses. This project is not affiliated with Microsoft, FSDreamTeam or ProSim.
+
+1.2.1: tolerate legacy Windows-1252 characters in aircraft XML incorrectly marked as UTF-8. Preserve original bytes in installer backups and save edited XML as valid UTF-8. Structurally invalid XML remains an error.

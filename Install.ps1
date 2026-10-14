@@ -1,5 +1,6 @@
 param([string]$CommunityRoot = "$env:APPDATA\Microsoft Flight Simulator 2024\Packages\Community")
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'XmlIO.ps1')
 $sourceRoot = $PSScriptRoot
 $aircraftRoot = Join-Path $CommunityRoot 'prosim-b738'
 $panelRelative = 'SimObjects/Airplanes/prosim-b738-2026/panel/panel.cfg'
@@ -15,7 +16,7 @@ foreach ($path in @($panelPath,$soundPath,$aircraftLayout)) { if (-not (Test-Pat
 $panelText = [IO.File]::ReadAllText($panelPath)
 $soundDoc = New-Object System.Xml.XmlDocument
 $soundDoc.PreserveWhitespace = $true
-$soundDoc.Load($soundPath)
+$soundDoc=Read-BellXml $soundPath
 # Upgrade legacy personalized identifiers in memory; originals are backed up below.
 $panelText=[regex]::Replace($panelText,'\b\w*GSXJetwayBell/JetwayBell\.html','GSXJetwayBell/JetwayBell.html')
 foreach($node in @($soundDoc.SelectNodes('//Sound[contains(@FileName,"GSX_Jetway_Bell")]'))) {
@@ -129,7 +130,7 @@ $kdalRoot=Join-Path $CommunityRoot 'iblueyonder-airport-kdal-dallas-love-field'
 $kdalSoundRelative='SimObjects/Landmarks/KDAL_Jetways/soundai/soundai.xml'
 if(Test-Path -LiteralPath (Join-Path $kdalRoot $kdalSoundRelative)) {
  $changed=@()
- $kdalDoc=New-Object System.Xml.XmlDocument;$kdalDoc.PreserveWhitespace=$true;$kdalDoc.Load((Join-Path $kdalRoot $kdalSoundRelative))
+ $kdalDoc=New-Object System.Xml.XmlDocument;$kdalDoc.PreserveWhitespace=$true;$kdalDoc=Read-BellXml (Join-Path $kdalRoot $kdalSoundRelative)
  $oldBell=$kdalDoc.SelectSingleNode('//Sound[@FileName="jetway-bell"]')
  if($null -ne $oldBell) {
   $saved=Join-Path (Join-Path $backupRoot 'kdal') $kdalSoundRelative;New-Item -ItemType Directory -Path (Split-Path -Parent $saved) -Force | Out-Null;Copy-Item -LiteralPath (Join-Path $kdalRoot $kdalSoundRelative) -Destination $saved
