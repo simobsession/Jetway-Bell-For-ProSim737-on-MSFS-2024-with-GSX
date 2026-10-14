@@ -1,10 +1,10 @@
-{
+﻿{
   "dependencies": [],
   "content_type": "MISC",
   "title": "Jetway Bell For ProSim737 on MSFS 2024 with GSX",
   "manufacturer": "",
   "creator": "GSX Jetway Bell",
-  "package_version": "1.2.5",
+  "package_version": "1.2.6",
   "minimum_game_version": "1.2.8",
   "minimum_compatibility_version": "2.6.0.17"
 }

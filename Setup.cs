@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
 using System.Diagnostics;
@@ -22,7 +22,7 @@ class SetupForm : Form {
   folder.Text=FindCommunity();browse.Click+=(s,e)=>{using(var d=new FolderBrowserDialog()){d.Description="Select MSFS 2024 Community folder";d.SelectedPath=folder.Text;if(d.ShowDialog()==DialogResult.OK)folder.Text=d.SelectedPath;}};
   install.Click+=async(s,e)=>await Run(false);uninstall.Click+=async(s,e)=>await Run(true);
   settings.Click+=async(s,e)=>await EditSounds();
-  if(soundSettings)Shown+=async(s,e)=>await EditSounds();
+  
   if(removing)Shown+=async(s,e)=>await Run(true);
  }
  async Task EditSounds(){
@@ -36,7 +36,7 @@ class SetupForm : Form {
    var match=Regex.Match(File.ReadAllText(cfg),"(?m)^InstalledPackagesPath\\s+\"([^\"]+)\"");if(match.Success){string p=Path.Combine(match.Groups[1].Value,"Community");if(Directory.Exists(Path.Combine(p,"prosim-b738")))return p;}}
   return Path.Combine(app,@"Microsoft Flight Simulator 2024\Packages\Community");
  }
- async Task<bool> Run(bool remove){
+ async Task<bool> Run(bool remove,bool settingsOnly=false){
   if(Process.GetProcessesByName("FlightSimulator2024").Length>0 || Process.GetProcessesByName("FlightSimulator").Length>0){MessageBox.Show("Close MSFS completely first.");return false;}
   string selected=folder.Text.Trim().Trim('"');if(!Directory.Exists(selected)){MessageBox.Show("Choose an existing Community folder.");return false;}
   if(remove && MessageBox.Show("Remove the jetway bell and its aircraft integration? Other aircraft sounds are preserved.","Uninstall",MessageBoxButtons.YesNo)!=DialogResult.Yes)return false;
@@ -44,6 +44,7 @@ class SetupForm : Form {
   try{
    string output=await Task.Run(()=>{
     Directory.CreateDirectory(home);
+    if(settingsOnly){string applied=NativeInstaller.Run(home,selected,false,false);File.WriteAllText(Path.Combine(home,"setup-last.log"),applied);return applied;}
     using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("payload.zip"))using(var zip=new ZipArchive(stream,ZipArchiveMode.Read))foreach(var entry in zip.Entries){
      string target=Path.GetFullPath(Path.Combine(home,entry.FullName));if(!target.StartsWith(home+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase))throw new Exception("Invalid package path.");
      if(String.IsNullOrEmpty(entry.Name)){Directory.CreateDirectory(target);continue;}Directory.CreateDirectory(Path.GetDirectoryName(target));using(var input=entry.Open())using(var file=File.Create(target))input.CopyTo(file);
@@ -51,9 +52,21 @@ class SetupForm : Form {
     string targetExe=SetupPersistence.Store(Assembly.GetExecutingAssembly().Location,home);
     string result=NativeInstaller.Run(home,selected,remove,true,targetExe);
     File.WriteAllText(Path.Combine(home,"setup-last.log"),result);return result;
-   });log.Text=output;MessageBox.Show(remove?"Uninstall completed. Backups and setup files are retained for recovery.":"Installation completed. Start MSFS to test the bell.","Jetway Bell");return true;
-  }catch(Exception e){log.Text=e.Message;MessageBox.Show("Setup could not complete. Details are shown in the window.","Jetway Bell");return false;}
+   });log.Text=output;MessageBox.Show(settingsOnly?"Sound settings applied. Start MSFS to hear your changes.":remove?"Uninstall completed. Backups and setup files are retained for recovery.":"Installation completed. Start MSFS to test the bell.","Jetway Bell");return true;
+  }catch(Exception e){log.Text=e.Message;MessageBox.Show(settingsOnly?"Unable to apply sound settings: "+e.Message:"Setup could not complete. Details are shown in the window.","Jetway Bell");return false;}
   finally{settings.Enabled=install.Enabled=uninstall.Enabled=browse.Enabled=folder.Enabled=true;}
  }
- [STAThread]static void Main(string[] args){Application.EnableVisualStyles();Application.Run(new SetupForm(Array.Exists(args,a=>a.Equals("/uninstall",StringComparison.OrdinalIgnoreCase)),Array.Exists(args,a=>a.Equals("/settings",StringComparison.OrdinalIgnoreCase))));}
+ internal static Form CreateStartupForm(string[] args){
+  bool removing=Array.Exists(args,a=>a.Equals("/uninstall",StringComparison.OrdinalIgnoreCase));
+  if(!removing && Array.Exists(args,a=>a.Equals("/settings",StringComparison.OrdinalIgnoreCase))){
+   var backend=new SetupForm(false,false);
+   var dialog=new SoundSettingsForm(backend.home);
+   dialog.StartPosition=FormStartPosition.CenterScreen;
+   dialog.ApplySettings=()=>backend.Run(false,true);
+   dialog.FormClosed+=(s,e)=>backend.Dispose();
+   return dialog;
+  }
+  return new SetupForm(removing,false);
+ }
+ [STAThread]static void Main(string[] args){Application.EnableVisualStyles();Application.Run(CreateStartupForm(args));}
 }
