@@ -1,6 +1,6 @@
 ﻿Jetway Bell For ProSim737 on MSFS 2024 with GSX
 
-Version 1.2.8 - Sound Settings preview
+Version 1.2.9 - Sound Settings preview
 
 
 
@@ -78,3 +78,5 @@ No SDK, ProSim aircraft assets, GSX source files, user settings or private backu
 1.2.7: Show version numbers in Setup and Sound Settings title bars. Add Uninstall to Sound Settings with explicit preserve/remove-all options. Full removal runs only after successful aircraft/package uninstall, is restricted to the exact application data folder, and does not traverse linked directories. Preserve remains the default.
 
 1.2.8: Remove Sound Settings from Setup. Successful installation explicitly confirms success and asks you to close the installer, with the same message retained in its log. Add a Close button. Open sound settings through the installed desktop or Start menu app shortcut.
+
+1.2.9: List the bundled default bell as a gray, selectable and playable entry. Custom default and airport recordings are listed separately. Preview switches to Stop during playback and resets when finished or stopped. Selecting another entry, saving, uninstalling or exiting stops playback. Rename Cancel to Exit; unsaved edits are discarded. Default entries cannot be removed with Remove override.
