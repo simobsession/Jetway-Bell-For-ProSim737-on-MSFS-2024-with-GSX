@@ -48,8 +48,8 @@ class SetupForm : Form {
      string target=Path.GetFullPath(Path.Combine(home,entry.FullName));if(!target.StartsWith(home+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase))throw new Exception("Invalid package path.");
      if(String.IsNullOrEmpty(entry.Name)){Directory.CreateDirectory(target);continue;}Directory.CreateDirectory(Path.GetDirectoryName(target));using(var input=entry.Open())using(var file=File.Create(target))input.CopyTo(file);
     }
-    string self=Assembly.GetExecutingAssembly().Location,targetExe=Path.Combine(home,"Setup.exe");if(!String.Equals(Path.GetFullPath(self),targetExe,StringComparison.OrdinalIgnoreCase))File.Copy(self,targetExe,true);
-    string result=NativeInstaller.Run(home,selected,remove,true);
+    string targetExe=SetupPersistence.Store(Assembly.GetExecutingAssembly().Location,home);
+    string result=NativeInstaller.Run(home,selected,remove,true,targetExe);
     File.WriteAllText(Path.Combine(home,"setup-last.log"),result);return result;
    });log.Text=output;MessageBox.Show(remove?"Uninstall completed. Backups and setup files are retained for recovery.":"Installation completed. Start MSFS to test the bell.","Jetway Bell");return true;
   }catch(Exception e){log.Text=e.Message;MessageBox.Show("Setup could not complete. Details are shown in the window.","Jetway Bell");return false;}

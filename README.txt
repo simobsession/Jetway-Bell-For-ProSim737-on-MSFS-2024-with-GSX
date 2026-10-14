@@ -1,5 +1,5 @@
 Jetway Bell For ProSim737 on MSFS 2024 with GSX
-Version 1.2.2 — Sound Settings preview
+Version 1.2.3 — Sound Settings preview
 
 Download Setup.exe from this release. Everything needed by the bell installer is embedded in that single executable. MSFS 2024, GSX Pro and the supported ProSim737 aircraft must already be installed.
 
@@ -26,6 +26,8 @@ DEVELOPMENT
 C++/WASM module, JavaScript gauge and compiled C# Windows Forms setup/installation backend. No PowerShell or other shell is launched at runtime. The EXE payload contains only the MSFS package and documentation; it contains no installation scripts or external audio helper DLL. Build-Setup.ps1 builds Setup.exe using the Windows .NET Framework compiler and includes the complete payload. Build-Release.ps1 builds the manual installer ZIP. Build-Distance.ps1 requires the separately obtained official MSFS 2024 SDK. Run Node tests test-bell-state.cjs, test-distance-module.cjs, test-door-mix.cjs and test-transport.cjs; run test-sound-settings.ps1 for isolated settings lifecycle tests.
 No SDK, ProSim aircraft assets, GSX source files, user settings or private backups are distributed. No open-source or audio license has been assigned; installation packages are provided for personal simulator use. Contact the repository owner regarding other uses. This project is not affiliated with Microsoft, FSDreamTeam or ProSim.
 
-1.2.2: tolerate legacy Windows-1252 characters in aircraft XML incorrectly marked as UTF-8. Preserve original bytes in installer backups and save edited XML as valid UTF-8. Structurally invalid XML remains an error.
+1.2.3: tolerate legacy Windows-1252 characters in aircraft XML incorrectly marked as UTF-8. Preserve original bytes in installer backups and save edited XML as valid UTF-8. Structurally invalid XML remains an error.
 
-1.2.2: replace all runtime installation, custom sound generation, XML handling, shortcut/registry operations and removal scripts with compiled C# inside Setup.exe. PowerShell build/test scripts in the source repository are development tools only and are not shipped in Setup.exe. Native lifecycle/rollback tests pass. The EXE is still unsigned; eliminating script execution does not guarantee antivirus acceptance.
+1.2.3: replace all runtime installation, custom sound generation, XML handling, shortcut/registry operations and removal scripts with compiled C# inside Setup.exe. PowerShell build/test scripts in the source repository are development tools only and are not shipped in Setup.exe. Native lifecycle/rollback tests pass. The EXE is still unsigned; eliminating script execution does not guarantee antivirus acceptance.
+
+1.2.3: store the settings/uninstaller executable under a versioned, content-verified filename. Upgrades no longer overwrite a fixed Setup.exe that may be open or read-only. Shortcuts and the Windows uninstall entry point to the new copy.
