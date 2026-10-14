@@ -2,7 +2,7 @@
 public static class SetupPersistence {
  public static string Store(string source,string home){
   Directory.CreateDirectory(home);string hash=Digest(source);
-  string target=Path.Combine(home,"JetwayBell-1.2.6-"+hash.Substring(0,16)+".exe");
+  string target=Path.Combine(home,"JetwayBell-1.2.7-"+hash.Substring(0,16)+".exe");
   if(String.Equals(Path.GetFullPath(source),Path.GetFullPath(target),StringComparison.OrdinalIgnoreCase))return target;
   if(File.Exists(target)){if(Digest(target)==hash)return target;throw new IOException("The stored settings application has unexpected contents: "+target);}
   string temporary=Path.Combine(home,"setup-copy-"+Guid.NewGuid().ToString("N")+".tmp");

@@ -11,7 +11,7 @@ class SetupForm : Form {
  TextBox folder=new TextBox(),log=new TextBox(); Button install=new Button(),uninstall=new Button(),browse=new Button(),settings=new Button();
  string home=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"GSXJetwayBellProSim");
  public SetupForm(bool removing,bool soundSettings){
-  Text="Jetway Bell for ProSim737 — Setup";Width=760;Height=490;StartPosition=FormStartPosition.CenterScreen;Icon=System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
+  Text="Jetway Bell for ProSim GSX v"+AppVersion.Text+" — Setup";Width=760;Height=490;StartPosition=FormStartPosition.CenterScreen;Icon=System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
   var title=new Label{Text="Jetway Bell For ProSim737 on MSFS 2024 with GSX",Left=18,Top=18,Width=700,Height=25};
   var help=new Label{Text="Close MSFS first. Choose the Community folder containing prosim-b738.",Left=18,Top=50,Width=700};
   folder.SetBounds(18,82,610,25);browse.Text="Browse...";browse.SetBounds(636,80,95,28);
@@ -27,7 +27,7 @@ class SetupForm : Form {
  }
  async Task EditSounds(){
   string config=Path.Combine(home,@"UserData\settings.xml");string old=File.Exists(config)?File.ReadAllText(config):null;
-  try{using(var dialog=new SoundSettingsForm(home)){if(dialog.ShowDialog(this)==DialogResult.OK){}if(dialog.Saved){bool applied=await Run(false);if(!applied){if(old==null)File.Delete(config);else File.WriteAllText(config,old);}}}}catch(Exception e){MessageBox.Show(e.Message,"Sound Settings");}
+  try{using(var dialog=new SoundSettingsForm(home)){dialog.UninstallApplication=()=>Run(true,true);if(dialog.ShowDialog(this)==DialogResult.OK){}if(dialog.Saved){bool applied=await Run(false);if(!applied){if(old==null)File.Delete(config);else File.WriteAllText(config,old);}}}}catch(Exception e){MessageBox.Show(e.Message,"Sound Settings");}
  }
  string FindCommunity(){
   using(var k=Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\GSXJetwayBellProSim")){if(k!=null){var saved=k.GetValue("CommunityRoot") as string;if(!String.IsNullOrEmpty(saved))return saved;}}
@@ -39,11 +39,13 @@ class SetupForm : Form {
  async Task<bool> Run(bool remove,bool settingsOnly=false){
   if(Process.GetProcessesByName("FlightSimulator2024").Length>0 || Process.GetProcessesByName("FlightSimulator").Length>0){MessageBox.Show("Close MSFS completely first.");return false;}
   string selected=folder.Text.Trim().Trim('"');if(!Directory.Exists(selected)){MessageBox.Show("Choose an existing Community folder.");return false;}
-  if(remove && MessageBox.Show("Remove the jetway bell and its aircraft integration? Other aircraft sounds are preserved.","Uninstall",MessageBoxButtons.YesNo)!=DialogResult.Yes)return false;
+  bool deleteAll=false;
+  if(remove){using(var choice=new UninstallOptionsForm()){if(choice.ShowDialog()!=DialogResult.OK)return false;deleteAll=choice.DeleteAll;}}
   settings.Enabled=install.Enabled=uninstall.Enabled=browse.Enabled=folder.Enabled=false;log.Text="Working...\r\n";
   try{
    string output=await Task.Run(()=>{
     Directory.CreateDirectory(home);
+    if(remove){string removed=NativeInstaller.Run(home,selected,true,true,Assembly.GetExecutingAssembly().Location);File.WriteAllText(Path.Combine(home,"setup-last.log"),removed);return removed;}
     if(settingsOnly){string applied=NativeInstaller.Run(home,selected,false,false);File.WriteAllText(Path.Combine(home,"setup-last.log"),applied);return applied;}
     using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("payload.zip"))using(var zip=new ZipArchive(stream,ZipArchiveMode.Read))foreach(var entry in zip.Entries){
      string target=Path.GetFullPath(Path.Combine(home,entry.FullName));if(!target.StartsWith(home+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase))throw new Exception("Invalid package path.");
@@ -52,7 +54,9 @@ class SetupForm : Form {
     string targetExe=SetupPersistence.Store(Assembly.GetExecutingAssembly().Location,home);
     string result=NativeInstaller.Run(home,selected,remove,true,targetExe);
     File.WriteAllText(Path.Combine(home,"setup-last.log"),result);return result;
-   });log.Text=output;MessageBox.Show(settingsOnly?"Sound settings applied. Start MSFS to hear your changes.":remove?"Uninstall completed. Backups and setup files are retained for recovery.":"Installation completed. Start MSFS to test the bell.","Jetway Bell");return true;
+   });log.Text=output;
+   if(remove){if(deleteAll)ApplicationCleanup.Start(home);MessageBox.Show(deleteAll?"Uninstalled. Application files, custom sounds, settings and backups will be removed when this window closes. Downloaded installers are not removed.":"Uninstalled. Existing application files, custom sounds, settings and backups were preserved for reinstallation.","Jetway Bell");System.Threading.SynchronizationContext.Current.Post(_=>Application.Exit(),null);return true;}
+   MessageBox.Show(settingsOnly?"Sound settings applied. Start MSFS to hear your changes.":remove?"Uninstall completed. Backups and setup files are retained for recovery.":"Installation completed. Start MSFS to test the bell.","Jetway Bell");return true;
   }catch(Exception e){log.Text=e.Message;MessageBox.Show(settingsOnly?"Unable to apply sound settings: "+e.Message:"Setup could not complete. Details are shown in the window.","Jetway Bell");return false;}
   finally{settings.Enabled=install.Enabled=uninstall.Enabled=browse.Enabled=folder.Enabled=true;}
  }
@@ -63,10 +67,28 @@ class SetupForm : Form {
    var dialog=new SoundSettingsForm(backend.home);
    dialog.StartPosition=FormStartPosition.CenterScreen;
    dialog.ApplySettings=()=>backend.Run(false,true);
+   dialog.UninstallApplication=()=>backend.Run(true,true);
    dialog.FormClosed+=(s,e)=>backend.Dispose();
    return dialog;
   }
   return new SetupForm(removing,false);
  }
- [STAThread]static void Main(string[] args){Application.EnableVisualStyles();Application.Run(CreateStartupForm(args));}
+ [STAThread]static void Main(string[] args){Application.EnableVisualStyles();if(ApplicationCleanup.TryRun(args))return;Application.Run(CreateStartupForm(args));}
+}
+
+static class AppVersion {
+ public static string Text {get{return Assembly.GetExecutingAssembly().GetName().Version.ToString(3);}}
+}
+class UninstallOptionsForm:Form {
+ RadioButton all=new RadioButton();
+ public bool DeleteAll {get{return all.Checked;}}
+ public UninstallOptionsForm(){
+  Text="Jetway Bell v"+AppVersion.Text+" — Uninstall";ClientSize=new System.Drawing.Size(610,255);FormBorderStyle=FormBorderStyle.FixedDialog;MaximizeBox=false;MinimizeBox=false;StartPosition=FormStartPosition.CenterScreen;
+  var info=new Label{Left=18,Top=18,Width=574,Height=38,Text="Remove the jetway bell package, aircraft integration and shortcuts? Other aircraft sounds are preserved."};
+  var keep=new RadioButton{Left=18,Top=65,Width=570,Height=28,Checked=true,Text="Preserve existing files, custom sounds and settings for reinstallation"};
+  all.SetBounds(18,105,570,28);all.Text="Remove all application files, custom sounds, settings and backups";
+  var note=new Label{Left=18,Top=145,Width=574,Height=38,Text="Remove all permanently deletes saved recordings and preferences. Downloaded installers remain in their original location."};
+  var remove=new Button{Left=340,Top=208,Width=120,Text="Uninstall",DialogResult=DialogResult.OK};var cancel=new Button{Left=475,Top=208,Width=115,Text="Cancel",DialogResult=DialogResult.Cancel};
+  Controls.AddRange(new Control[]{info,keep,all,note,remove,cancel});AcceptButton=remove;CancelButton=cancel;
+ }
 }
